@@ -8,10 +8,33 @@ Introduction
 
 Why bother working with embedded templating languages within Python when
 Python is already a fully functional and extensible scripting language
-perfect for templating? PDT provides a straight forword templating
+perfect for templating? PDT provides a straight forward templating
 strategy for Python. All that's involed is decorating your template
 functions, and all expressions within them will be concatenated and
 returned at function completion.
+
+
+Source
+------
+
+The source code for PDT is available from the GitHub repo
+`cpburnz/python-decorated-templates`_.
+
+.. _`cpburnz/python-decorated-templates`: https://github.com/cpburnz/python-decorated-templates.git
+    
+    
+Installation
+------------
+
+PDT can be installed from source with::
+    
+    python setup.py install
+    
+PDT is also available for install through PyPI_::
+
+    pip install pdt
+
+.. _PyPI: http://pypi.python.org/pypi/pdt
 
 
 Templates
@@ -84,7 +107,7 @@ and arguments can be specified with::
     
     @pdt.template(io_factory=myfactory, io_args=myargs, io_kw=mykeywords)
     def spam(...):
-			...
+        ...
 
 *io_factory* (**callable**) creates ``file``-like instances implementing
 *write()* and *getvalue()* when called. Typically, this will be a
@@ -96,7 +119,7 @@ passed to *io_factory* when it is called. Default is an empty ``tuple``.
 *io_kw* (``dict``) optionally specifies keyword arguments passed to
 *io_factory* when it is called. Default is an empty ``dict``.
 
-Here's a simplified version of the ``ListIO`` class::
+Here's a simplified version of the built-in ``ListIO`` class::
 
     class SimpleListIO(object):
         def __init__(self):
@@ -137,12 +160,25 @@ using ``cStringIO``::
     @pdt.template(io_factory=CustomIO, io_kw={'encoding': 'latin1'})
     def spam(...):
         ...
+    
+To decorate several templates with the same arguments, just store the
+arguments in a ``dict`` and pass them as **keyword arguments**::
+    
+    latin1 = {'io_factory': CustomIO, 'io_kw': {'encoding': 'latin1'}}
+  
+    @pdt.template(**latin1)
+    def spam2(...):
+        ...
+        
+    @pdt.template(**latin1)
+    def spam3(...):
+        ...
 
 The *io_args* and *io_kw* are passed as positional and keyword arguments
 to *io_factory* which is the class constructor.
 
 The *write()* function will receive the result of each expression in the
-first (*data*) argument. *data* will have to be converted to either a
+first argument: *data*. *data* will have to be converted to either a
 ``str`` or ``unicode`` manually. If *data* is ``None``, it should be
 ignored so functions which do not return a value (i.e., ``None``) do not
 output "None" for each call.
@@ -154,18 +190,20 @@ The *getvalue()* function returns the concatenated ``str`` or
 Implementation
 --------------
 
-PDT is inspired by Quixote's PTL_ (Python Template Language) but without
+PDT is inspired by Quixote_'s PTL_ (Python Template Language) but without
 the need for special file syntax, extensions and import hooks. The PDT
 template decorator modifies the source of wrapped functions, and
 recompiles them to allow for the expression output.
 
-.. _PTL: http://quixote.ca/
 
-Only in source ``def``ed functions are supported. Functions for which
-their text source (not byte code) is not available are not supported.
-Neither are closures, generators, nor are ``lambda``s supported.
-Functions can only be decorated above/after (not below/before) being
-decorated as a template.
+.. _Quixote: http://quixote.ca/
+.. _PTL: http://quixote.ca/doc/PTL.html
+
+Only functions ``def``\ ed in modules and classes are supported.
+Functions for which their text source code is not available are not
+supported. Neither are closures, generators, nor are ``lambda``\ s
+supported. Functions can only be decorated above/after (not
+below/before) being decorated as a template.
 
 .. NOTE: Generator functions might be supported in the future.
 """
@@ -173,12 +211,13 @@ decorated as a template.
 __author__ = "Caleb P. Burns <cpburnz@gmail.com>"
 __copyright__ = "Copyright (C) 2012 by Caleb P. Burns"
 __license__ = "MIT"
-__version__ = "0.7"
+__version__ = "0.7.3"
 __status__ = "Development"
 
 import ast
 import _ast
 import inspect
+import textwrap
 import types
 
 __all__ = ['template']
@@ -335,6 +374,7 @@ class Template(object):
 		
 		# Get function source code.
 		func_src = inspect.getsource(func)
+		func_src = textwrap.dedent(func_src)
 		
 		# Parse function source code to AST.
 		mod_ast = ast.parse(func_src)

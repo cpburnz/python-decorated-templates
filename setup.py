@@ -8,6 +8,10 @@ if sys.version_info[:2] != (2, 7):
 
 import pdt
 
+# Write long description to "README.rst".
+with open('README.rst', 'wb') as fh:
+	fh.write(pdt.__doc__)
+
 setup(
 	name="pdt",
 	version=pdt.__version__,
@@ -27,5 +31,9 @@ setup(
 		"Topic :: Software Development :: Libraries :: Python Modules"
 	],
 	license="MIT",
-	packages=['pdt']
+	packages=['pdt'],
+	package_dir={'pdt': 'pdt'},
+	data_files=[
+		('', ['README.rst', 'LICENSE'])
+	]
 )

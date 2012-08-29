@@ -250,3 +250,8 @@ FunctionDef(
 	decorator_list=[]
 )
 '''
+
+class T_class:
+	
+	def T():
+		pass
