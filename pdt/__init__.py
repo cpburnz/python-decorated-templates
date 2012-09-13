@@ -195,7 +195,6 @@ the need for special file syntax, extensions and import hooks. The PDT
 template decorator modifies the source of wrapped functions, and
 recompiles them to allow for the expression output.
 
-
 .. _Quixote: http://quixote.ca/
 .. _PTL: http://quixote.ca/doc/PTL.html
 
@@ -211,19 +210,26 @@ below/before) being decorated as a template.
 __author__ = "Caleb P. Burns <cpburnz@gmail.com>"
 __copyright__ = "Copyright (C) 2012 by Caleb P. Burns"
 __license__ = "MIT"
-__version__ = "0.7.3"
+__version__ = "0.7.7"
 __status__ = "Development"
 
 import ast
 import _ast
 import inspect
 import textwrap
-import types
 
 __all__ = ['template']
 
 _ast_store = _ast.Store()
 _ast_load = _ast.Load()
+_ast_param = _ast.Param()
+
+def dedent_func_lines(func_lines):
+	# Dedent decorators and function def.
+	for i, line in enumerate(func_lines):
+		line = func_lines[i] = line.lstrip()
+		if line.startswith('def'): 
+			break
 
 class ListIO(object):
 	"""
@@ -283,7 +289,7 @@ class ListIO(object):
 		Returns the buffer's contents (``str`` or ``unicode``).
 		"""
 		return ''.join(self.buff)
-		
+
 
 class Template(object):
 	"""
@@ -362,6 +368,17 @@ class Template(object):
 		# Wrap function.
 		self.wrap_func(*args, **kw)
 		return self
+	
+	def __get__(self, obj, type=None):
+		"""
+		Makes this class a method descriptor. When a class instance method
+		is decorated as a template, this will be called when its accessed.
+		
+		Returns ``self`` (``Template``).
+		"""
+		# Bind function to calling class instance if it is not already.
+		self.func = self.func.__get__(obj, type)
+		return self
 
 	def __repr__(self):
 		return "%s.%s(%s)" % (self.__class__.__module__, self.__class__.__name__, ", ".join([("%s=%s" % (k, repr(getattr(self, k)))) for k in self.__slots__ if getattr(self, k)]))
@@ -369,23 +386,53 @@ class Template(object):
 	def wrap_func(self, func):
 		if self.func:
 			raise RuntimeError("func is already set.")
-		if not isinstance(func, types.FunctionType):
-			raise TypeError("func:%r is not a function." % func)
-		
+		if not inspect.isfunction(func):
+			raise TypeError("func:%r is not a function or method." % func)
+			
 		# Get function source code.
-		func_src = inspect.getsource(func)
-		func_src = textwrap.dedent(func_src)
+		func_file = inspect.getsourcefile(func)
+		func_src, lineno = inspect.getsourcelines(func)
+		
+		# Dedent decorators and function def.
+		dedent_func_lines(func_src)
+		func_src = ''.join(func_src)
+		
+		# Fix line numbers.
+		func_src = "\n" * (lineno - 1) + func_src
 		
 		# Parse function source code to AST.
 		mod_ast = ast.parse(func_src)
 		func_ast = mod_ast.body[0]
 		
-		# Setup template global namespace.
-		func_ns = func.__globals__.copy()
-		func_ns['__pdt_io_factory'] = self.io_factory
-		func_ns['__pdt_io_args'] = self.io_args
-		func_ns['__pdt_io_kw'] = self.io_kw
-
+		# Wrap function in an enclosing function to create closure. This is
+		# so that we can pass along our variables to the template function.
+		if inspect.ismethod(func):
+			enc_name = '__pdt_enc_%s_%s_%s' % (func.__module__, (func.im_self or func.im_class).__name__, func.__name__)
+		else:
+			enc_name = '__pdt_enc_%s_%s' % (func.__module__, func.__name__)
+		enc_vars = {
+			'__pdt_io_factory': self.io_factory,
+			'__pdt_io_args': self.io_args,
+			'__pdt_io_kw': self.io_kw
+		}
+		# def __pdt_enc_func(...):
+		mod_ast.body[0] = _ast.FunctionDef(enc_name, _ast.arguments([
+			_ast.Name('__pdt_io_factory', _ast_param),
+			_ast.Name('__pdt_io_args', _ast_param),
+			_ast.Name('__pdt_io_kw', _ast_param)
+		], None, None, []), [
+			# def func(...):
+			#   ...
+			func_ast,
+			# return func
+			_ast.Return(_ast.Name(func.__name__, _ast_load))
+		], [])
+		
+		# Get template global namespace.
+		# .. NOTE: This has to be the actual function globals (module dict)
+		#    reference and NOT A COPY.
+		func_globals = func.__globals__
+		
 		# Remove our decorator to prevent recursive wrapping. It is safe to
 		# clear the whole list because decorators before ours have not yet
 		# be called (but will be), and any decorators after ours would have
@@ -429,12 +476,13 @@ class Template(object):
 					raise TypeError("Generator functions are not supported.")
 		
 		# Generate line and column information for modified AST.
-		ast.fix_missing_locations(func_ast)
+		ast.fix_missing_locations(mod_ast)
 		
 		# Compile template function.
-		exec compile(mod_ast, "<%r %r>" % (self, func), 'exec') in func_ns
+		exec compile(mod_ast, func_file, 'exec') in func_globals
 		
 		# Store compiled template function.
-		self.func = func_ns[func.__name__]
+		self.func = func_globals[enc_name](**enc_vars)
+		del func_globals[enc_name]
 		
 template = Template
