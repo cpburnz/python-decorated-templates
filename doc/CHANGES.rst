@@ -1,11 +1,11 @@
 Change History
 ==============
 
-0.7.7 (TODO)
+0.7.7 (2012-09-18)
 ------------
 
  - Improve "setup.py".
-
+ - Patch python issue 1218234 <http://bugs.python.org/issue1218234>
 
 0.7.6 (2012-08-30)
 ------------------

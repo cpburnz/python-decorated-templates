@@ -216,7 +216,7 @@ __status__ = "Development"
 import ast
 import _ast
 import inspect
-import textwrap
+import linecache
 
 __all__ = ['template']
 
@@ -390,7 +390,17 @@ class Template(object):
 			raise TypeError("func:%r is not a function or method." % func)
 			
 		# Get function source code.
+		#
+		# HACK: Patch issue 1218234_. If getsource() is called on a
+		# function, it's module is modified and reloaded afterward and then
+		# getsource() is called again, then the returned source is the
+		# cached source that was returned from the first call to
+		# getsource(). This is due to the caching in the linecache module
+		# not being tightly coupled with reload().
+		#
+		# .. 1218234: http://bugs.python.org/issue1218234
 		func_file = inspect.getsourcefile(func)
+		linecache.checkcache(func_file) # HACK: issue 1218234
 		func_src, lineno = inspect.getsourcelines(func)
 		
 		# Dedent decorators and function def.
