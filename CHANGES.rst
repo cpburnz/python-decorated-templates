@@ -4,7 +4,7 @@ Change History
 0.7.9 (TO BE DETERMINED)
 ------------------------
 
-- Updated "README.rst"
+- Added "TODO.rst"
 
 
 0.7.8 (2012-11-12)
