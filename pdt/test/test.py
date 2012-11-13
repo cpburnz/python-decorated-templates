@@ -7,8 +7,13 @@ __author__ = "Caleb P. Burns"
 __version__ = "0.1"
 __status__ = "Prototype"
 
+import os.path
+import sys
 from urllib import urlencode
 from xml.sax.saxutils import escape, quoteattr
+
+SETUP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, SETUP_DIR)
 
 import pdt
 
@@ -165,7 +170,7 @@ def render(loc, items, add_url, cancel_url, finish_url, menu_url, active_item=No
 			<h1>No Items Scanned</h1>	
 		</div>
 		"""
-		
+	raise Exception("an error")
 	# Footer.
 	"""
 		<div id="footer">

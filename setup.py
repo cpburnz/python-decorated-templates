@@ -14,11 +14,11 @@ if sys.version_info[:2] != (2, 7):
 import pdt
 
 # Write readme file.
-with open('doc/README.rst', 'wb') as fh:
+with open('README.rst', 'wb') as fh:
 	fh.write(pdt.__doc__)
 
 # Read changes file.
-with open('doc/CHANGES.rst', 'rb') as fh:
+with open('CHANGES.rst', 'rb') as fh:
 	changes = fh.read()
 	
 setup(
@@ -42,5 +42,5 @@ setup(
 	license="MIT",
 	packages=['pdt'],
 	package_dir={'pdt': 'pdt'},
-	data_files=[('pdt/doc', ['doc/LICENSE.txt'])]
+	data_files=[('pdt', ['LICENSE.txt'])]
 )

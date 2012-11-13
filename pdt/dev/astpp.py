@@ -21,7 +21,7 @@ def dump(node, annotate_fields=True, include_attributes=False, indent='  '):
             fields = [(a, _format(b, level)) for a, b in iter_fields(node)]
             if include_attributes and node._attributes:
                 fields.extend([(a, _format(getattr(node, a), level))
-                               for a in node._attributes])
+                               for a in node._attributes if hasattr(node, a)])
             return ''.join([
                 node.__class__.__name__,
                 '(',

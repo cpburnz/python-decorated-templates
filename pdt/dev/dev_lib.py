@@ -4,9 +4,20 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')))
 
+L = lambda: None
+L2 = lambda: "String"
 
 def A():
 	"Line 1"
+
+def A2():
+	pass
+	
+def A3():
+	None
+	
+def A4():
+	""
 	
 def B():
 	1 + 1
@@ -131,7 +142,7 @@ FunctionDef(
 )
 '''
 
-def L():
+def MultiReturn():
 	return
 	return None
 	return a
@@ -306,3 +317,7 @@ class Dedent(object):
 		"""
 This text has no indentation while the func 'def' does.
 		"""
+		
+@pdt.template
+def raise_error():
+	raise Exception("Error within template function.")
