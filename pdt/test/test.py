@@ -170,7 +170,13 @@ def render(loc, items, add_url, cancel_url, finish_url, menu_url, active_item=No
 			<h1>No Items Scanned</h1>	
 		</div>
 		"""
-	raise Exception("an error")
+		
+	def lineno():
+		import inspect
+		return inspect.currentframe().f_back.f_lineno
+		
+	raise Exception(str(lineno()))
+	
 	# Footer.
 	"""
 		<div id="footer">

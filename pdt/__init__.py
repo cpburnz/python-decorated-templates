@@ -221,7 +221,7 @@ decorated as a template.
 __author__ = "Caleb P. Burns <cpburnz@gmail.com>"
 __copyright__ = "Copyright (C) 2012 by Caleb P. Burns"
 __license__ = "MIT"
-__version__ = "0.7.8"
+__version__ = "0.7.9.dev0"
 __status__ = "Development"
 
 import ast
