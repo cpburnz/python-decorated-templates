@@ -70,7 +70,7 @@ Here's what the template will look like after being recompiled::
 
     import pdt
 
-    def spam(eggs, ham=None)
+    def spam(eggs, ham=None):
         _buffer = pdt.ListIO()
         _buffer.write('''
         This would normally be the doc string but this is going to be
@@ -94,6 +94,17 @@ Here's what the template will look like after being recompiled::
         # template.
         return _buffer.getvalue()
 
+Templates cannot define a doc string after their function signature
+because it will be interpreted as an expression and prepended to the
+result of each call. However, a doc string can be provided through the
+*doc* argument of the template decorator::
+
+    import pdt
+    
+    @pdt.template(doc="My doc string.")
+    def span(...):
+        ...
+
 
 Template IO Buffer
 ------------------
@@ -112,10 +123,10 @@ and arguments can be specified with::
 *write()* and *getvalue()* when called. Typically, this will be a
 class object. By default this is ``ListIO``. 
 		
-*io_args* (``tuple``) optionally specifies any positional arguments
+*io_args* (**sequence**) optionally specifies any positional arguments
 passed to *io_factory* when it is called. Default is an empty ``tuple``.
 		
-*io_kw* (``dict``) optionally specifies keyword arguments passed to
+*io_kw* (**mapping**) optionally specifies keyword arguments passed to
 *io_factory* when it is called. Default is an empty ``dict``.
 
 Here's a simplified version of the built-in ``ListIO`` class::
@@ -197,10 +208,10 @@ recompiles them to allow for the expression output.
 .. _Quixote: http://quixote.ca/
 .. _PTL: http://quixote.ca/doc/PTL.html
 
-Only functions ``def``\ ed in modules and classes are supported.
-Functions for which their text source code is not available are not
-supported. Neither are closures, generators, nor are ``lambda``\ s
-supported. Functions can only be decorated above/after (not
-below/before) being decorated as a template.
+Only functions ``def``\ ed in modules, classes and functions are
+supported. Functions for which their text source code is not available
+are not supported. Neither generators nor ``lambda``\ s are supported.
+Functions can only be decorated above/after (not below/before) being
+decorated as a template.
 
 .. NOTE: Generator functions might be supported in the future.
