@@ -38,12 +38,6 @@ Installation
 PDT can be installed from source with::
     
     python setup.py install
-    
-PDT is also available for install through PyPI_::
-
-    pip install pdt
-
-.. _PyPI: http://pypi.python.org/pypi/pdt
 
 
 Templates
