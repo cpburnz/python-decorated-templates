@@ -219,3 +219,8 @@ Functions can only be decorated above/after (not below/before) being
 decorated as a template.
 
 .. NOTE: Generator functions might be supported in the future.
+
+
+.. image:: https://d2weczhvl823v0.cloudfront.net/cpburnz/python-decorated-templates/trend.png
+   :alt: Bitdeli badge
+   :target: https://bitdeli.com/free
