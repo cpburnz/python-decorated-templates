@@ -3,8 +3,9 @@ NOTICE
 
 Exception tracebacks have bizarre line numbers which are caused from the AST
 manipulation and compiling. This makes this pretty much useless and I haven't
-been able to resolve the issue. Also, I'd highly recommend using `Mako`_ for
-real web templating in Python. Mako is what PHP should have been.
+been able to resolve the issue, but it was an interesting experiment. Also,
+I'd highly recommend using `Mako`_ for real web templating in Python. Mako is
+what PHP should have been.
    
 .. _`Mako`: http://www.makotemplates.org
 
